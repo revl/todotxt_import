@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 
 import xml.dom.minidom
+import codecs
+import sys
+
+global of
 
 class Task:
-    def __init__(self)
+    def __init__(self):
         self.text = ''
         self.date = None
         self.url = None
@@ -18,7 +22,7 @@ def ProcessSubDiv(subdiv):
         # Ignore these fields
         pass
     elif subdiv_class == 'notes':
-        print subdiv_class
+        print >> of, subdiv_class
     else:
         if subdiv.childNodes.length != 2:
             raise Exception, 'Invalid subdiv node size (' + \
@@ -31,11 +35,11 @@ def ProcessSubDiv(subdiv):
 
         #if value != 'none':
         if subdiv_class == 'url':
-            print subdiv_class + ': ' + value
+            print >> of, subdiv_class + ': ' + value
         elif subdiv_class == 'list':
-            print subdiv_class + ': ' + value
-    else:
-            print subdiv_class + ': ' + value
+            print >> of, subdiv_class + ': ' + value
+        else:
+            print >> of, subdiv_class + ': ' + value
 
 def ProcessContent(content):
     if content.childNodes.length != 1:
@@ -62,9 +66,10 @@ def ProcessContent(content):
 
 try:
     dom = xml.dom.minidom.parse('Atom_Feed.xml')
+    of = codecs.open('todo.txt.RTM', 'w', 'utf-8')
 
     for task in dom.getElementsByTagName('entry'):
-        print '--------------------------------'
+        print >> of, '--------------------------------'
         updated = None
         title = ''
         meta = None
@@ -84,10 +89,10 @@ try:
             else:
                 raise Exception, 'Unknown node ' + field.localName
         if updated:
-            print updated,
+            print >> of, updated,
         if meta:
-            print title, meta
+            print >> of, title, meta
         else:
-            print title
+            print >> of, title
 except Exception, e:
-    print e
+    print >> sys.stderr, e
