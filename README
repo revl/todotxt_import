@@ -1,0 +1,20 @@
+This repository contains two Python scripts that take a list of tasks exported
+from Remember The Milk and convert it to Gina Trapani's todo.txt format (see
+http://todotxt.com/).
+
+The first script, atom_to_todotxt.py, accepts task data as an Atom feed, which
+can be downloaded from https://www.rememberthemilk.com/atom/YOUR_RTM_USER/.
+The script looks for an input file named 'Atom_Feed.xml' in the current
+directory and saves its output as 'todo.txt.RTM'.
+
+The second script, ics_to_todotxt.py, does the same, but expects input data in
+iCalendar format. The input is read from a file named 'iCalendar_Service.ics'
+and the output is saved, again, as 'todo.txt.RTM'.
+
+To download task data in iCalendar format, use this URL:
+https://www.rememberthemilk.com/icalendar/YOUR_RTM_USER/
+
+The latter script is preferable. If it doesn't work for you, please let me know
+and I'll fix it (my contact email should be somewhere around here).
+
+-revl
