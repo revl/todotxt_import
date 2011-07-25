@@ -20,3 +20,6 @@ The latter script is preferable.  If it doesn't work for you,
 please let me know and I'll fix it (my contact email should be
 somewhere around here).  And, of course, pull requests are
 always welcome.
+
+RTM lists are coverted to todo.txt projects (+Project), and
+RTM tags and locations are converted to contexts (@Context).
