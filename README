@@ -23,3 +23,9 @@ always welcome.
 
 RTM lists are coverted to todo.txt projects (+Project), and
 RTM tags and locations are converted to contexts (@Context).
+Unfortunately, although iCalendar format contains much more
+information about tasks, it's missing RTM list names, so if
+those are important, the two options left are:
+1) use atom_to_todotxt.py
+2) reconstruct the list names in ics_to_todotxt.py output
+   manually.
