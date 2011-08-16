@@ -3,6 +3,7 @@
 import xml.dom.minidom
 import codecs
 import re
+import sys
 
 class Task:
     def __init__(self):
@@ -105,14 +106,19 @@ class Task:
                 result += word
         return result
 
-dom = xml.dom.minidom.parse('Atom_Feed.xml')
-output_file_name = 'todo.txt.RTM'
-output_file = codecs.open(output_file_name, 'w', 'utf-8')
+def main():
+    dom = xml.dom.minidom.parse('Atom_Feed.xml')
+    output_file_name = 'todo.txt.RTM'
+    output_file = codecs.open(output_file_name, 'w', 'utf-8')
 
-for entry in dom.getElementsByTagName('entry'):
-    task = Task()
-    task.parse_entry(entry)
-    print >> output_file, task.convert()
+    for entry in dom.getElementsByTagName('entry'):
+        task = Task()
+        task.parse_entry(entry)
+        print >> output_file, task.convert()
 
-print 'Conversion completed. Please carefully review the contents of'
-print output_file_name + ' before merging it into your todo.txt.'
+    print 'Conversion completed. Please carefully review the contents of'
+    print output_file_name + ' before merging it into your todo.txt.'
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())
