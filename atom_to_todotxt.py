@@ -1,12 +1,28 @@
 #!/usr/bin/env python
 
+"""
+This script reads Remember The Milk task data as an Atom feed, which can
+be downloaded from https://www.rememberthemilk.com/atom/YOUR_RTM_USER_NAME/
+and converts it to Gina Trapani's todo.txt format (see http://todotxt.com/).
+
+The script looks for an input file named 'Atom_Feed.xml' in the current
+directory and saves its output as 'todo.txt.RTM'.
+"""
+
 import xml.dom.minidom
 import codecs
 import re
 import sys
 
+class ConversionError(Exception):
+    """Exception raised for unexpected input XML structure."""
+    pass
+
 class Task:
+    """Helper class for converting RTM tasks in Atom format to todo.txt."""
+
     def __init__(self):
+        """Initialize a new Task object to be filled by parse_entry()."""
         self.__priority = ''
         self.__date = ''
         self.__descr = ''
@@ -16,11 +32,9 @@ class Task:
         self.__contexts = set()
 
     def parse_entry(self, entry):
+        """Parse the <entry> element; save parsing results in 'self'."""
         for field in entry.childNodes:
-            if field.localName in ('author', 'link', 'id'):
-                # Ignore these elements
-                pass
-            elif field.localName == 'updated':
+            if field.localName == 'updated':
                 self.__date = field.firstChild.nodeValue
                 time_pos = self.__date.find('T')
                 if time_pos >= 0:
@@ -30,92 +44,111 @@ class Task:
                 self.__descr = field.firstChild.nodeValue
             elif field.localName == 'content':
                 self.__process_content(field)
-            else:
-                raise Exception, 'Unknown node ' + field.localName
 
     def convert(self):
-        result = self.__priority + self.__date + self.__descr + \
+        """Return the results of parsing as a line in todo.txt format."""
+        todo = self.__priority + self.__date + self.__descr + \
             self.__url + self.__notes + self.__project
         if self.__contexts:
-            result += ' @' + ' @'.join(self.__contexts)
-        return result
-
-    def __process_subdiv(self, subdiv):
-        subdiv_class = subdiv.attributes['class'].nodeValue
-        if subdiv_class.startswith('rtm_'):
-            subdiv_class = subdiv_class[4:]
-        if subdiv_class in ('due', 'time_estimate', 'postponed'):
-            # Ignore these fields
-            pass
-        elif subdiv_class == 'notes':
-            for note_div in subdiv.childNodes:
-                note_class = note_div.attributes['class'].nodeValue
-                if note_class != 'rtm_note':
-                    raise Exception, 'Invalid note class: ' + note_class
-                if note_div.childNodes.length != 3:
-                    raise Exception, 'Unexpected number of children in a note'
-                (note_title, note_content) = note_div.childNodes[:2]
-                self.__notes += ' ' + \
-                    note_title.firstChild.firstChild.nodeValue + ': ' + \
-                    repr(note_content.firstChild.nodeValue)
-        else:
-            if subdiv.childNodes.length != 2:
-                raise Exception, 'Invalid subdiv node size (' + \
-                    str(subdiv.childNodes.length) + '); class: ' + subdiv_class
-
-            value = subdiv.lastChild.firstChild
-            if subdiv_class == 'url':
-                value = value.firstChild
-            value = value.nodeValue
-
-            if value != 'none':
-                if subdiv_class == 'priority':
-                    self.__priority = '(' + chr(ord(value) + 16) + ') '
-                elif subdiv_class == 'url':
-                    self.__url = ' URL: ' + value
-                elif subdiv_class == 'list':
-                    self.__project = ' +' + self.__capitalize(value)
-                elif subdiv_class == 'location':
-                    self.__contexts.add(self.__capitalize(value))
-                elif subdiv_class == 'tags':
-                    for tag in value.split(', '):
-                        self.__contexts.add(self.__capitalize(tag))
-                else:
-                    raise Exception, 'Invalid subdiv class: ' + subdiv_class
+            todo += ' @' + ' @'.join(self.__contexts)
+        return todo
 
     def __process_content(self, content):
+        """Process the <content> part of <entry>."""
         if content.childNodes.length != 1:
-            raise Exception, 'Invalid content length'
-
+            raise ConversionError, 'Invalid content length'
         content = content.firstChild
         if content.localName != 'div':
-            raise Exception, 'Unexpected content node ' + content.localName
-
+            raise ConversionError, 'Unexpected content node ' + str(content)
         for subdiv in content.childNodes:
             if subdiv.localName != 'div':
-                raise Exception, 'Unknown div node ' + subdiv.localName
-            self.__process_subdiv(subdiv)
+                raise ConversionError, 'Unknown div node ' + subdiv.localName
+            subdiv_class = subdiv.attributes['class'].nodeValue
+            if subdiv_class == 'rtm_notes':
+                self.__process_notes(subdiv)
+            else:
+                self.__process_subdiv(subdiv, subdiv_class)
+
+    def __process_subdiv(self, subdiv, subdiv_class):
+        """Extract task attributes: URL, list, tags, location, etc."""
+        if subdiv.childNodes.length != 2:
+            raise ConversionError, 'Invalid subdiv node size (' + \
+                str(subdiv.childNodes.length) + '); class: ' + subdiv_class
+        value = subdiv.lastChild.firstChild
+        if subdiv_class == 'rtm_url':
+            value = value.firstChild
+        value = value.nodeValue
+        if value != 'none':
+            if subdiv_class == 'rtm_priority':
+                self.__priority = '(' + chr(ord(value) + 16) + ') '
+            elif subdiv_class == 'rtm_url':
+                self.__url = ' ' + value
+            elif subdiv_class == 'rtm_list':
+                self.__project = ' +' + self.__camel_case(value)
+            elif subdiv_class == 'rtm_location':
+                self.__contexts.add(self.__camel_case(value))
+            elif subdiv_class == 'rtm_tags':
+                for tag in value.split(','):
+                    self.__contexts.add(self.__camel_case(tag))
+
+    def __process_notes(self, notes_subdiv):
+        """Handle task notes, a special case of task attributes."""
+        for note_div in notes_subdiv.childNodes:
+            note_class = note_div.attributes['class'].nodeValue
+            if note_class != 'rtm_note':
+                raise ConversionError, 'Invalid note class: ' + note_class
+            if note_div.childNodes.length != 3:
+                raise ConversionError, 'Unexpected number of children in a note'
+            (note_title, note_content) = note_div.childNodes[:2]
+            self.__notes += ' ' + \
+                note_title.firstChild.firstChild.nodeValue + ': ' + \
+                repr(note_content.firstChild.nodeValue)
 
     @staticmethod
-    def __capitalize(words):
+    def __camel_case(phrase):
+        """Convert a noun phrase to a CamelCase identifier."""
         result = ''
-        for word in re.split('(?:\W|_)+', words):
+        for word in re.split('(?:\W|_)+', phrase):
             if word:
                 if word[:1].islower():
                     word = word.capitalize()
                 result += word
         return result
 
+def remove_whitespace(parent_dom_node):
+    """Remove all whitespace-only DOM nodes."""
+    blank_nodes = []
+    for node in parent_dom_node.childNodes:
+        if node.nodeType == xml.dom.Node.TEXT_NODE and not node.data.strip():
+            blank_nodes.append(node)
+        elif node.hasChildNodes():
+            remove_whitespace(node)
+    for node in blank_nodes:
+        parent_dom_node.removeChild(node)
+        node.unlink()
+
 def main():
-    dom = xml.dom.minidom.parse('Atom_Feed.xml')
+    """Convert input_file (Atom_Feed.xml) to output_file (todo.txt)."""
+    input_file_name = 'Atom_Feed.xml'
+    try:
+        dom = xml.dom.minidom.parse(input_file_name)
+    except Exception, err:
+        print >> sys.stderr, input_file_name + ': ' + str(err)
+        return 1
+    remove_whitespace(dom)
     output_file_name = 'todo.txt.RTM'
-    output_file = codecs.open(output_file_name, 'w', 'utf-8')
-
-    for entry in dom.getElementsByTagName('entry'):
-        task = Task()
-        task.parse_entry(entry)
-        print >> output_file, task.convert()
-
+    try:
+        output_file = codecs.open(output_file_name, 'w', 'utf-8')
+        for entry in dom.getElementsByTagName('entry'):
+            task = Task()
+            task.parse_entry(entry)
+            print >> output_file, task.convert()
+    except IOError, err:
+        print >> sys.stderr, output_file_name + ': ' + str(err)
+        return 2
+    except ConversionError, err:
+        print >> sys.stderr, str(err)
+        return 3
     print 'Conversion completed. Please carefully review the contents of'
     print output_file_name + ' before merging it into your todo.txt.'
     return 0
