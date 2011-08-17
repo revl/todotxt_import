@@ -4,7 +4,7 @@ it to Gina Trapani's todo.txt format (see http://todotxt.com/).
 
 The first script, atom_to_todotxt.py, accepts task
 data as an Atom feed, which can be downloaded from
-https://www.rememberthemilk.com/atom/YOUR_RTM_USER/
+https://www.rememberthemilk.com/atom/YOUR_RTM_USER_NAME/
 The script looks for an input file named 'Atom_Feed.xml' in the
 current directory and saves its output as 'todo.txt.RTM'.
 
@@ -14,7 +14,7 @@ from a file named 'iCalendar_Service.ics' and the output is
 saved, again, as 'todo.txt.RTM'.
 
 To download task data in iCalendar format, use this URL:
-https://www.rememberthemilk.com/icalendar/YOUR_RTM_USER/
+https://www.rememberthemilk.com/icalendar/YOUR_RTM_USER_NAME/
 
 The latter script is preferable.  If it doesn't work for you,
 please let me know and I'll fix it (my contact email should be
@@ -29,3 +29,5 @@ those are important, the two options left are:
 1) use atom_to_todotxt.py
 2) reconstruct the list names in ics_to_todotxt.py output
    manually.
+
+See also docstrings within each script for more details.
