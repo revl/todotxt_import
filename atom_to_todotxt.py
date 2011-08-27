@@ -139,7 +139,7 @@ def main():
         for entry in dom.getElementsByTagName('entry'):
             print >> output_file, TaskConverter(entry).convert()
     except IOError, err:
-        print >> sys.stderr, output_file_name + ': ' + str(err)
+        print >> sys.stderr, str(err)
         return 2
     except ConversionError, err:
         print >> sys.stderr, str(err)
