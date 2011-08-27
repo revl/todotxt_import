@@ -18,11 +18,11 @@ class ConversionError(Exception):
     """Exception raised for unexpected input XML structure."""
     pass
 
-class Task:
+class TaskConverter:
     """Helper class for converting RTM tasks in Atom format to todo.txt."""
 
-    def __init__(self):
-        """Initialize a new Task object to be filled by parse_entry()."""
+    def __init__(self, entry):
+        """Parse the <entry> element; save parsing results in 'self'."""
         self.__priority = ''
         self.__date = ''
         self.__descr = ''
@@ -30,9 +30,6 @@ class Task:
         self.__notes = ''
         self.__project = ''
         self.__contexts = set()
-
-    def parse_entry(self, entry):
-        """Parse the <entry> element; save parsing results in 'self'."""
         for field in entry.childNodes:
             if field.localName == 'updated':
                 self.__date = field.firstChild.nodeValue
@@ -140,9 +137,7 @@ def main():
     try:
         output_file = codecs.open(output_file_name, 'w', 'utf-8')
         for entry in dom.getElementsByTagName('entry'):
-            task = Task()
-            task.parse_entry(entry)
-            print >> output_file, task.convert()
+            print >> output_file, TaskConverter(entry).convert()
     except IOError, err:
         print >> sys.stderr, output_file_name + ': ' + str(err)
         return 2
