@@ -42,7 +42,7 @@ class ICSParser:
         self.__node = {}
         self.__stack = []
         for line in input_file:
-            line = line.rstrip('\n')
+            line = line.rstrip('\r\n')
             if linebuf is None:
                 linebuf = line
             else:
