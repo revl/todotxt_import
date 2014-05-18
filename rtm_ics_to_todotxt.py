@@ -159,7 +159,8 @@ def main(argv):
                 output_line += ' ' + todo['URL']
             if 'DUE' in todo:
                 output_line += ' due:' + normalize_date(todo['DUE'])
-            output_line += process_description(todo['DESCRIPTION'])
+            if 'DESCRIPTION' in todo:
+                output_line += process_description(todo['DESCRIPTION'])
             print >> output_file, output_line
     except IOError, err:
         print >> sys.stderr, str(err)
