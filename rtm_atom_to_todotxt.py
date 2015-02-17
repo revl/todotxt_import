@@ -8,15 +8,17 @@ Atom feed to Gina Trapani's todo.txt format (see http://todotxt.com/).
 USAGE = """
 Convert Remember The Milk task list to a todo.txt file.
 
-As its input, this script takes an Atom feed, which must be
-downloaded and saved as a file using a web browser and this URL:
+This script takes an Atom feed downloaded from the Remember The Milk
+website as its input. The feed must be downloaded using a web browser
+from this URL:
 
 view-source:https://www.rememberthemilk.com/atom/YOUR_RTM_USER_NAME/
 
-Replace the last URL component with your actual RTM user name.
+The last URL component must be replaced with actual RTM user name.
+The user must be logged in.
 
-If your browser complains about the syntax of the URL above,
-use this one instead:
+In case if the browser reports a syntax error for the URL above,
+the following URL can be used instead:
 
 https://www.rememberthemilk.com/atom/YOUR_RTM_USER_NAME/
 
