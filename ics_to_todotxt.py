@@ -13,7 +13,7 @@ Convert iCalendar task data to a todo.txt file.
 See README.md for details.
 
 Usage:
-    %s INPUT_ICS OUTPUT_TXT
+    %s INPUT_ICS OUTPUT_TXT [APPENDIX]
 
 Where:
     INPUT_ICS     : Pathname of the source iCalendar file.
@@ -21,10 +21,12 @@ Where:
     OUTPUT_TXT    : Pathname for the output todo.txt file.
                     The file must not exist.
 
-Examples:
-    $ %s iCalendar_Service.ics todo.txt.RTM
+    APPENDIX      : Text to append to each output line.
 
-    $ %s Reminders.ics todo.txt.Reminders
+Examples:
+    $ %s Reminders.ics todo.txt.Reminders +ListName
+
+    $ %s iCalendar_Service.ics todo.txt.RTM
 """
 
 import codecs
@@ -129,10 +131,15 @@ def process_description(description):
 
 def main(argv):
     """Convert input_file (iCalendar_Service.ics) to output_file (todo.txt)."""
-    if len(argv) != 3:
+    if len(argv) == 4:
+        appendix = ' ' + argv[3]
+    elif len(argv) == 3:
+        appendix = ''
+    else:
         print >> sys.stderr, USAGE % (argv[0], argv[0], argv[0])
         return 1
-    (input_file_name, output_file_name) = argv[1:]
+    input_file_name = argv[1]
+    output_file_name = argv[2]
     if os.path.exists(output_file_name):
         print >> sys.stderr, "Error: '" + output_file_name + "' exists."
         return 1
@@ -160,7 +167,7 @@ def main(argv):
                 output_line += ' due:' + normalize_date(todo['DUE'])
             if 'DESCRIPTION' in todo:
                 output_line += process_description(todo['DESCRIPTION'])
-            print >> output_file, output_line
+            print >> output_file, output_line + appendix
     except IOError, err:
         print >> sys.stderr, str(err)
         return 2
