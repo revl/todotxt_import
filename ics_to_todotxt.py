@@ -1,19 +1,16 @@
 #!/usr/bin/env python
 
 """
-This script reads Remember The Milk task data in iCalendar format and
-converts it to Gina Trapani's todo.txt format (see http://todotxt.com/).
+This script reads task data in iCalendar format and converts it to Gina
+Trapani's todo.txt format (see http://todotxt.com/).
+
+The task data can be exported from Remember The Milk or Apple's Reminders
+app on OS X.
 """
 
 USAGE = """
-Convert Remember The Milk task list to a todo.txt file.
-
-As its input, this script takes a file in iCalendar format, which
-must be downloaded and saved using a web browser and this URL:
-
-https://www.rememberthemilk.com/icalendar/YOUR_RTM_USER_NAME/
-
-Replace the last URL component with your actual RTM user name.
+Convert iCalendar task data to a todo.txt file.
+See README.md for details.
 
 Usage:
     %s INPUT_ICS OUTPUT_TXT
@@ -24,8 +21,10 @@ Where:
     OUTPUT_TXT    : Pathname for the output todo.txt file.
                     The file must not exist.
 
-Example:
-    %s iCalendar_Service.ics todo.txt.RTM
+Examples:
+    $ %s iCalendar_Service.ics todo.txt.RTM
+
+    $ %s Reminders.ics todo.txt.Reminders
 """
 
 import codecs
@@ -131,7 +130,7 @@ def process_description(description):
 def main(argv):
     """Convert input_file (iCalendar_Service.ics) to output_file (todo.txt)."""
     if len(argv) != 3:
-        print >> sys.stderr, USAGE % (argv[0], argv[0])
+        print >> sys.stderr, USAGE % (argv[0], argv[0], argv[0])
         return 1
     (input_file_name, output_file_name) = argv[1:]
     if os.path.exists(output_file_name):

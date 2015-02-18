@@ -12,15 +12,10 @@ This script takes an Atom feed downloaded from the Remember The Milk
 website as its input. The feed must be downloaded using a web browser
 from this URL:
 
-view-source:https://www.rememberthemilk.com/atom/YOUR_RTM_USER_NAME/
+https://www.rememberthemilk.com/atom/YOUR_RTM_USER_NAME/
 
 The last URL component must be replaced with actual RTM user name.
 The user must be logged in.
-
-In case if the browser reports a syntax error for the URL above,
-the following URL can be used instead:
-
-https://www.rememberthemilk.com/atom/YOUR_RTM_USER_NAME/
 
 Usage:
     %s INPUT_XML OUTPUT_TXT
