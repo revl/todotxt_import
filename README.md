@@ -34,7 +34,7 @@ To import tasks from iCal:
 
 When importing ICS files prepared by Reminders or iCal, the names of
 the lists are lost, so if this information is important, one must import
-tasks on per-list basis and add ``+Project`` names manually, for example,
+tasks on a per-list basis and add ``+Project`` names manually, for example,
 by providing the third argument to ``ics_to_todotxt.py``.
 
 Import tasks from Remember The Milk
@@ -43,9 +43,9 @@ Import tasks from Remember The Milk
 In addition to ``ics_to_todotxt.py``, which expects data in iCalendar
 format, RTM tasks can also be imported using ``rtm_atom_to_todotxt.py``,
 which requires an Atom feed downloaded from rememberthemilk.com.
-The former script is the preferred method though.
+The former script is the preferred method, though.
 
-RTM lists are coverted to todo.txt projects (``+Project``); RTM tags and
+RTM lists are converted to todo.txt projects (``+Project``); RTM tags and
 locations are converted to contexts (``@Context``). Unfortunately, although
 iCalendar format contains much more information about tasks, it's missing
 the RTM list names, so if those are important, there are two options:
@@ -56,12 +56,12 @@ the RTM list names, so if those are important, there are two options:
 RTM task data in iCalendar format to be used by ``ics_to_todotxt.py``
 must be downloaded and saved using a web browser from this URL:
 
-    https://www.rememberthemilk.com/icalendar/YOUR_RTM_USER_NAME/
+    https://www.rememberthemilk.com/icalendar/YOUR_RTM_USERNAME/
 
 To download RTM task data as an Atom feed for the ``rtm_atom_to_todotxt.py``
 script, the following URL must be used instead:
 
-    https://www.rememberthemilk.com/atom/YOUR_RTM_USER_NAME/
+    https://www.rememberthemilk.com/atom/YOUR_RTM_USERNAME/
 
-The last component in both URLs must be replaced with the actual RTM user
-name.  The user must be logged in.
+The last component in both URLs must be replaced with the actual RTM
+username.  The user must be logged in.
