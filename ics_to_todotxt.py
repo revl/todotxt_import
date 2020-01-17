@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 This script reads task data in iCalendar format and converts it to Gina
@@ -13,7 +13,7 @@ Convert iCalendar task data to a todo.txt file.
 See README.md for details.
 
 Usage:
-    %s INPUT_ICS OUTPUT_TXT [APPENDIX]
+    {0} INPUT_ICS OUTPUT_TXT [APPENDIX]
 
 Where:
     INPUT_ICS     : Pathname of the source iCalendar file.
@@ -24,9 +24,9 @@ Where:
     APPENDIX      : Text to append to each output line.
 
 Examples:
-    $ %s Reminders.ics todo.txt.Reminders +ListName
+    $ {0} Reminders.ics todo.txt.Reminders +ListName
 
-    $ %s iCalendar_Service.ics todo.txt.RTM
+    $ {0} iCalendar_Service.ics todo.txt.RTM
 """
 
 import codecs
@@ -136,12 +136,12 @@ def main(argv):
     elif len(argv) == 3:
         appendix = ''
     else:
-        print >> sys.stderr, USAGE % (argv[0], argv[0], argv[0])
+        print(USAGE.format(argv[0]), file=sys.stderr)
         return 1
     input_file_name = argv[1]
     output_file_name = argv[2]
     if os.path.exists(output_file_name):
-        print >> sys.stderr, "Error: '" + output_file_name + "' exists."
+        print("Error: '" + output_file_name + "' exists.", file=sys.stderr)
         return 1
     try:
         todos = ICSParser(codecs.open(input_file_name,
@@ -168,11 +168,11 @@ def main(argv):
             if 'DESCRIPTION' in todo:
                 output_line += process_description(todo['DESCRIPTION'])
             print >> output_file, output_line + appendix
-    except IOError, err:
-        print >> sys.stderr, str(err)
+    except IOError as err:
+        print(err, file=sys.stderr)
         return 2
-    print 'Conversion completed. Please carefully review the contents of'
-    print output_file_name + ' before merging it into your existing todo.txt.'
+    print('Conversion completed. Please carefully review the contents of')
+    print(output_file_name + ' before merging it into your existing todo.txt.')
     return 0
 
 if __name__ == "__main__":

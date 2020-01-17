@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 This script converts Remember The Milk task data in the form of an
@@ -18,7 +18,7 @@ The last URL component must be replaced with actual RTM user name.
 The user must be logged in.
 
 Usage:
-    %s INPUT_XML OUTPUT_TXT
+    {0} INPUT_XML OUTPUT_TXT
 
 Where:
     INPUT_XML     : Pathname of the source Atom feed.
@@ -27,7 +27,7 @@ Where:
                     The file must not exist.
 
 Example:
-    %s Atom_Feed.xml todo.txt.RTM
+    {0} Atom_Feed.xml todo.txt.RTM
 """
 
 import xml.dom.minidom
@@ -75,13 +75,14 @@ class TaskConverter:
     def __process_content(self, content):
         """Process the <content> part of <entry>."""
         if content.childNodes.length != 1:
-            raise ConversionError, 'Invalid content length'
+            raise ConversionError('Invalid content length')
         content = content.firstChild
         if content.localName != 'div':
-            raise ConversionError, 'Unexpected content node ' + str(content)
+            raise ConversionError('Unexpected content node {}'.format(content))
         for subdiv in content.childNodes:
             if subdiv.localName != 'div':
-                raise ConversionError, 'Unknown div node ' + subdiv.localName
+                raise ConversionError(
+                    'Unknown div node {}'.format(subdiv.localName))
             subdiv_class = subdiv.attributes['class'].nodeValue
             if subdiv_class == 'rtm_notes':
                 self.__process_notes(subdiv)
@@ -91,8 +92,9 @@ class TaskConverter:
     def __process_subdiv(self, subdiv, subdiv_class):
         """Extract task attributes: URL, list, tags, location, etc."""
         if subdiv.childNodes.length != 2:
-            raise ConversionError, 'Invalid subdiv node size (' + \
-                str(subdiv.childNodes.length) + '); class: ' + subdiv_class
+            raise ConversionError(
+                'Invalid subdiv node size ({}); class: {}'.format(
+                    subdiv.childNodes.length, subdiv_class))
         value = subdiv.lastChild.firstChild
         if subdiv_class == 'rtm_url':
             value = value.firstChild
@@ -115,9 +117,10 @@ class TaskConverter:
         for note_div in notes_subdiv.childNodes:
             note_class = note_div.attributes['class'].nodeValue
             if note_class != 'rtm_note':
-                raise ConversionError, 'Invalid note class: ' + note_class
+                raise ConversionError(
+                    'Invalid note class: {}'.format(note_class))
             if note_div.childNodes.length != 3:
-                raise ConversionError, 'Unexpected number of children in a note'
+                raise ConversionError('Unexpected number of children in a note')
             (note_title, note_content) = note_div.childNodes[:2]
             self.__notes += ' ' + \
                 note_title.firstChild.firstChild.nodeValue + ': ' + \
@@ -149,33 +152,33 @@ def remove_whitespace(parent_dom_node):
 def main(argv):
     """Convert input_file (Atom_Feed.xml) to output_file (todo.txt)."""
     if len(argv) != 3:
-        print >> sys.stderr, USAGE % (argv[0], argv[0])
+        print(USAGE.format(argv[0]), file=sys.stderr)
         return 1
     (input_file_name, output_file_name) = argv[1:]
     if os.path.exists(output_file_name):
-        print >> sys.stderr, "Error: '" + output_file_name + "' exists."
+        print("Error: '{}' exists.".format(output_file_name), file=sys.stderr)
         return 1
     try:
         dom = xml.dom.minidom.parse(input_file_name)
-    except IOError, err:
-        print >> sys.stderr, str(err)
+    except IOError as err:
+        print(err, file=sys.stderr)
         return 2
-    except Exception, err:
-        print >> sys.stderr, input_file_name + ': ' + str(err)
+    except Exception as err:
+        print('{}: {}'.format(input_file_name, err), file=sys.stderr)
         return 2
     remove_whitespace(dom)
     try:
         output_file = codecs.open(output_file_name, 'w', 'utf-8')
         for entry in dom.getElementsByTagName('entry'):
-            print >> output_file, TaskConverter(entry).convert()
-    except IOError, err:
-        print >> sys.stderr, str(err)
+            print(TaskConverter(entry).convert(), file=output_file)
+    except IOError as err:
+        print(err, file=sys.stderr)
         return 3
-    except ConversionError, err:
-        print >> sys.stderr, str(err)
+    except ConversionError as err:
+        print(err, file=sys.stderr)
         return 3
-    print 'Conversion completed. Please carefully review the contents of'
-    print output_file_name + ' before merging it into your existing todo.txt.'
+    print('Conversion completed. Please carefully review the contents of')
+    print(output_file_name + ' before merging it into your existing todo.txt.')
     return 0
 
 if __name__ == "__main__":
