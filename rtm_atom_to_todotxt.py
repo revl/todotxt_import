@@ -5,6 +5,14 @@ This script converts Remember The Milk task data in the form of an
 Atom feed to Gina Trapani's todo.txt format (see http://todotxt.com/).
 """
 
+
+import xml.dom.minidom
+import codecs
+import re
+import sys
+import os.path
+
+
 USAGE = """
 Convert Remember The Milk task list to a todo.txt file.
 
@@ -30,15 +38,11 @@ Example:
     {0} Atom_Feed.xml todo.txt.RTM
 """
 
-import xml.dom.minidom
-import codecs
-import re
-import sys
-import os.path
 
 class ConversionError(Exception):
     """Exception raised for unexpected input XML structure."""
     pass
+
 
 class TaskConverter:
     """Helper class for converting RTM tasks in Atom format to todo.txt."""
@@ -120,7 +124,8 @@ class TaskConverter:
                 raise ConversionError(
                     'Invalid note class: {}'.format(note_class))
             if note_div.childNodes.length != 3:
-                raise ConversionError('Unexpected number of children in a note')
+                raise ConversionError(
+                    'Unexpected number of children in a note')
             (note_title, note_content) = note_div.childNodes[:2]
             self.__notes += ' ' + \
                 note_title.firstChild.firstChild.nodeValue + ': ' + \
@@ -130,12 +135,13 @@ class TaskConverter:
     def __camel_case(phrase):
         """Convert a noun phrase to a CamelCase identifier."""
         result = ''
-        for word in re.split('(?:\W|_)+', phrase):
+        for word in re.split(r'(?:\W|_)+', phrase):
             if word:
                 if word[:1].islower():
                     word = word.capitalize()
                 result += word
         return result
+
 
 def remove_whitespace(parent_dom_node):
     """Remove all whitespace-only DOM nodes."""
@@ -148,6 +154,7 @@ def remove_whitespace(parent_dom_node):
     for node in blank_nodes:
         parent_dom_node.removeChild(node)
         node.unlink()
+
 
 def main(argv):
     """Convert input_file (Atom_Feed.xml) to output_file (todo.txt)."""
@@ -180,6 +187,7 @@ def main(argv):
     print('Conversion completed. Please carefully review the contents of')
     print(output_file_name + ' before merging it into your existing todo.txt.')
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

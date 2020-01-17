@@ -8,6 +8,13 @@ The task data can be exported from Remember The Milk or Apple's Reminders
 app on OS X.
 """
 
+
+import codecs
+import re
+import sys
+import os
+
+
 USAGE = """
 Convert iCalendar task data to a todo.txt file.
 See README.md for details.
@@ -29,10 +36,6 @@ Examples:
     $ {0} iCalendar_Service.ics todo.txt.RTM
 """
 
-import codecs
-import re
-import sys
-import os
 
 class ICSParser:
     """Quick and dirty iCalendar format parser."""
@@ -52,7 +55,7 @@ class ICSParser:
                 else:
                     self.__parse_line(linebuf)
                     linebuf = line
-        if not linebuf is None:
+        if linebuf is not None:
             self.__parse_line(linebuf)
 
     def get_root(self):
@@ -75,8 +78,9 @@ class ICSParser:
         else:
             key, val = tuple(line.split(':', 1))
             key = key.split(';', 1)[0]
-            if not key in self.__node:
+            if key not in self.__node:
                 self.__node[key] = val
+
 
 def normalize_date(date):
     """Bring the date argument to a uniform format, which is YYYY-MM-DD."""
@@ -89,19 +93,22 @@ def normalize_date(date):
         date = date[:4] + '-' + date[4:6] + '-' + date[6:]
     return date
 
+
 def camel_case(words):
     """Convert a noun phrase to a CamelCase identifier."""
     result = ''
-    for word in re.split('(?:\W|_)+', words):
+    for word in re.split(r'(?:\W|_)+', words):
         if word:
             if word[:1].islower():
                 word = word.capitalize()
             result += word
     return result
 
+
 def unescape(string):
     """Remove backslashes from the string."""
     return re.sub(r'\\(.)', r'\1', string)
+
 
 def process_description(description):
     """Extract tags, location, and notes from the DESCRIPTION component."""
@@ -129,6 +136,7 @@ def process_description(description):
             next_sep = '; '
     return result
 
+
 def main(argv):
     """Convert input_file (iCalendar_Service.ics) to output_file (todo.txt)."""
     if len(argv) == 4:
@@ -145,7 +153,7 @@ def main(argv):
         return 1
     try:
         todos = ICSParser(codecs.open(input_file_name,
-            'r', 'utf-8')).get_root()['VTODO']
+                          'r', 'utf-8')).get_root()['VTODO']
         output_file = codecs.open(output_file_name, 'w', 'utf-8')
         for todo in todos:
             output_line = ''
@@ -167,13 +175,14 @@ def main(argv):
                 output_line += ' due:' + normalize_date(todo['DUE'])
             if 'DESCRIPTION' in todo:
                 output_line += process_description(todo['DESCRIPTION'])
-            print >> output_file, output_line + appendix
+            print(output_line + appendix, file=output_file)
     except IOError as err:
         print(err, file=sys.stderr)
         return 2
     print('Conversion completed. Please carefully review the contents of')
     print(output_file_name + ' before merging it into your existing todo.txt.')
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
